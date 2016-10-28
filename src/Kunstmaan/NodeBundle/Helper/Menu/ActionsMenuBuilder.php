@@ -177,6 +177,17 @@ class ActionsMenuBuilder
                         'extras'         => array('renderType' => 'button')
                     )
                 );
+                $menu->addChild(
+                    'action.exportpagetemplate',
+                    array(
+                        'linkAttributes' => array(
+                            'class' => 'btn btn-default btn--raise-on-hover',
+                            'data-toggle' => 'modal',
+                            'data-keyboard' => 'true',
+                            'data-target' => '#exportPagetemplate'
+                        ),
+                    )
+                );
                 if ($canRecopy) {
                     $menu->addChild(
                         'action.recopyfromlanguage',
@@ -301,6 +312,17 @@ class ActionsMenuBuilder
                                 'name'  => 'saveasdraft'
                             ),
                             'extras'         => array('renderType' => 'button')
+                        )
+                    );
+                    $menu->addChild(
+                        'action.exportpagetemplate',
+                        array(
+                            'linkAttributes' => array(
+                                'class' => 'btn btn-default btn--raise-on-hover',
+                                'data-toggle' => 'modal',
+                                'data-keyboard' => 'true',
+                                'data-target' => '#exportPagetemplate'
+                            ),
                         )
                     );
                     if ($canRecopy) {

@@ -4,6 +4,7 @@ subaction:
 action:
     saveasdraft: "Save as draft"
     recopyfromlanguage: "Copy content from other language"
+    exportpagetemplate: "Export pagetemplate"
     publish: "Publish"
     unpublish: "Unpublish"
     preview: "Preview"
@@ -167,3 +168,6 @@ kuma_node:
             button:
                 copy:   Copy
                 cancel: Cancel
+        export_pagetemplate:
+            button:
+                title:   Export pagetemplate
