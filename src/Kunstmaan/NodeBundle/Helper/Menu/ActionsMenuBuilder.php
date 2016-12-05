@@ -3,6 +3,7 @@
 namespace Kunstmaan\NodeBundle\Helper\Menu;
 
 use Doctrine\ORM\EntityManager;
+use FOS\UserBundle\Model\UserInterface;
 use Kunstmaan\NodeBundle\Entity\NodeVersion;
 use Kunstmaan\AdminBundle\Helper\Security\Acl\Permission\PermissionMap;
 use Kunstmaan\NodeBundle\Event\ConfigureActionMenuEvent;
@@ -58,11 +59,11 @@ class ActionsMenuBuilder
 
 
     /**
-     * @param FactoryInterface              $factory               The factory
-     * @param EntityManager                 $em                    The entity manager
-     * @param RouterInterface               $router                The router
-     * @param EventDispatcherInterface      $dispatcher            The event dispatcher
-     * @param AuthorizationCheckerInterface $authorizationChecker  The security authorization checker
+     * @param FactoryInterface              $factory              The factory
+     * @param EntityManager                 $em                   The entity manager
+     * @param RouterInterface               $router               The router
+     * @param EventDispatcherInterface      $dispatcher           The event dispatcher
+     * @param AuthorizationCheckerInterface $authorizationChecker The security authorization checker
      * @param PagesConfiguration            $pagesConfiguration
      */
     public function __construct(
@@ -72,13 +73,14 @@ class ActionsMenuBuilder
         EventDispatcherInterface $dispatcher,
         AuthorizationCheckerInterface $authorizationChecker,
         PagesConfiguration $pagesConfiguration
-    ) {
-        $this->factory              = $factory;
-        $this->em                   = $em;
-        $this->router               = $router;
-        $this->dispatcher           = $dispatcher;
+    )
+    {
+        $this->factory = $factory;
+        $this->em = $em;
+        $this->router = $router;
+        $this->dispatcher = $dispatcher;
         $this->authorizationChecker = $authorizationChecker;
-        $this->pagesConfiguration   = $pagesConfiguration;
+        $this->pagesConfiguration = $pagesConfiguration;
     }
 
     /**
@@ -87,7 +89,7 @@ class ActionsMenuBuilder
     public function createSubActionsMenu()
     {
         $activeNodeVersion = $this->getActiveNodeVersion();
-        $menu              = $this->factory->createItem('root');
+        $menu = $this->factory->createItem('root');
         $menu->setChildrenAttribute('class', 'page-sub-actions');
 
         if (null !== $activeNodeVersion && $this->isEditableNode) {
@@ -95,9 +97,9 @@ class ActionsMenuBuilder
                 'subaction.versions',
                 array(
                     'linkAttributes' => array(
-                        'data-toggle'   => 'modal',
+                        'data-toggle' => 'modal',
                         'data-keyboard' => 'true',
-                        'data-target'   => '#versions'
+                        'data-target' => '#versions'
                     )
                 )
             );
@@ -130,7 +132,7 @@ class ActionsMenuBuilder
             }
         }
 
-        $menu              = $this->factory->createItem('root');
+        $menu = $this->factory->createItem('root');
         $menu->setChildrenAttribute(
             'class',
             'page-main-actions js-auto-collapse-buttons'
@@ -153,15 +155,16 @@ class ActionsMenuBuilder
             return $menu;
         }
 
-        $activeNodeTranslation       = $activeNodeVersion->getNodeTranslation();
-        $node                        = $activeNodeTranslation->getNode();
+        $activeNodeTranslation = $activeNodeVersion->getNodeTranslation();
+        $node = $activeNodeTranslation->getNode();
         $queuedNodeTranslationAction = $this->em->getRepository(
             'KunstmaanNodeBundle:QueuedNodeTranslationAction'
         )->findOneBy(array('nodeTranslation' => $activeNodeTranslation));
 
-        $isFirst    = true;
-        $canEdit    = $this->authorizationChecker->isGranted(PermissionMap::PERMISSION_EDIT, $node);
+        $isFirst = true;
+        $canEdit = $this->authorizationChecker->isGranted(PermissionMap::PERMISSION_EDIT, $node);
         $canPublish = $this->authorizationChecker->isGranted(PermissionMap::PERMISSION_PUBLISH, $node);
+        $isSuperAdmin = $this->authorizationChecker->isGranted(UserInterface::ROLE_SUPER_ADMIN);
 
         if ($activeNodeVersion->isDraft() && $this->isEditableNode) {
             if ($canEdit) {
@@ -169,25 +172,27 @@ class ActionsMenuBuilder
                     'action.saveasdraft',
                     array(
                         'linkAttributes' => array(
-                            'type'  => 'submit',
+                            'type' => 'submit',
                             'class' => 'js-save-btn btn btn--raise-on-hover btn-primary',
                             'value' => 'save',
-                            'name'  => 'save'
+                            'name' => 'save'
                         ),
-                        'extras'         => array('renderType' => 'button')
+                        'extras' => array('renderType' => 'button')
                     )
                 );
-                $menu->addChild(
-                    'action.exportpagetemplate',
-                    array(
-                        'linkAttributes' => array(
-                            'class' => 'btn btn-default btn--raise-on-hover',
-                            'data-toggle' => 'modal',
-                            'data-keyboard' => 'true',
-                            'data-target' => '#exportPagetemplate'
-                        ),
-                    )
-                );
+                if ($isSuperAdmin) {
+                    $menu->addChild(
+                        'action.exportpagetemplate',
+                        array(
+                            'linkAttributes' => array(
+                                'class' => 'btn btn-default btn--raise-on-hover',
+                                'data-toggle' => 'modal',
+                                'data-keyboard' => 'true',
+                                'data-target' => '#exportPagetemplate'
+                            ),
+                        )
+                    );
+                }
                 if ($canRecopy) {
                     $menu->addChild(
                         'action.recopyfromlanguage',
@@ -207,16 +212,16 @@ class ActionsMenuBuilder
             $menu->addChild(
                 'action.preview',
                 array(
-                    'uri'            => $this->router->generate(
+                    'uri' => $this->router->generate(
                         '_slug_preview',
                         array(
-                            'url'     => $activeNodeTranslation->getUrl(),
+                            'url' => $activeNodeTranslation->getUrl(),
                             'version' => $activeNodeVersion->getId()
                         )
                     ),
                     'linkAttributes' => array(
                         'target' => '_blank',
-                        'class'  => 'btn btn-default btn--raise-on-hover'
+                        'class' => 'btn btn-default btn--raise-on-hover'
                     )
                 )
             );
@@ -228,7 +233,7 @@ class ActionsMenuBuilder
                         'linkAttributes' => array(
                             'data-toggle' => 'modal',
                             'data-target' => '#pub',
-                            'class'       => 'btn btn--raise-on-hover'.($isFirst ? ' btn-primary btn-save' : ' btn-default')
+                            'class' => 'btn btn--raise-on-hover'.($isFirst ? ' btn-primary btn-save' : ' btn-default')
                         )
                     )
                 );
@@ -240,12 +245,12 @@ class ActionsMenuBuilder
                     'action.save',
                     array(
                         'linkAttributes' => array(
-                            'type'  => 'submit',
+                            'type' => 'submit',
                             'class' => 'js-save-btn btn btn--raise-on-hover btn-primary',
                             'value' => 'save',
-                            'name'  => 'save'
+                            'name' => 'save'
                         ),
-                        'extras'         => array('renderType' => 'button')
+                        'extras' => array('renderType' => 'button')
                     )
                 );
                 $isFirst = false;
@@ -255,13 +260,13 @@ class ActionsMenuBuilder
                 $menu->addChild(
                     'action.preview',
                     array(
-                        'uri'            => $this->router->generate(
+                        'uri' => $this->router->generate(
                             '_slug_preview',
                             array('url' => $activeNodeTranslation->getUrl())
                         ),
                         'linkAttributes' => array(
                             'target' => '_blank',
-                            'class'  => 'btn btn-default btn--raise-on-hover'
+                            'class' => 'btn btn-default btn--raise-on-hover'
                         )
                     )
                 );
@@ -277,10 +282,10 @@ class ActionsMenuBuilder
                         'action.unpublish',
                         array(
                             'linkAttributes' => array(
-                                'class'         => 'btn btn-default btn--raise-on-hover',
-                                'data-toggle'   => 'modal',
+                                'class' => 'btn btn-default btn--raise-on-hover',
+                                'data-toggle' => 'modal',
                                 'data-keyboard' => 'true',
-                                'data-target'   => '#unpub'
+                                'data-target' => '#unpub'
                             )
                         )
                     );
@@ -292,10 +297,10 @@ class ActionsMenuBuilder
                         'action.publish',
                         array(
                             'linkAttributes' => array(
-                                'class'         => 'btn btn-default btn--raise-on-hover',
-                                'data-toggle'   => 'modal',
+                                'class' => 'btn btn-default btn--raise-on-hover',
+                                'data-toggle' => 'modal',
                                 'data-keyboard' => 'true',
-                                'data-target'   => '#pub'
+                                'data-target' => '#pub'
                             )
                         )
                     );
@@ -306,25 +311,27 @@ class ActionsMenuBuilder
                         'action.saveasdraft',
                         array(
                             'linkAttributes' => array(
-                                'type'  => 'submit',
+                                'type' => 'submit',
                                 'class' => 'btn btn--raise-on-hover'.($isFirst ? ' btn-primary btn-save' : ' btn-default'),
                                 'value' => 'saveasdraft',
-                                'name'  => 'saveasdraft'
+                                'name' => 'saveasdraft'
                             ),
-                            'extras'         => array('renderType' => 'button')
+                            'extras' => array('renderType' => 'button')
                         )
                     );
-                    $menu->addChild(
-                        'action.exportpagetemplate',
-                        array(
-                            'linkAttributes' => array(
-                                'class' => 'btn btn-default btn--raise-on-hover',
-                                'data-toggle' => 'modal',
-                                'data-keyboard' => 'true',
-                                'data-target' => '#exportPagetemplate'
-                            ),
-                        )
-                    );
+                    if ($isSuperAdmin) {
+                        $menu->addChild(
+                            'action.exportpagetemplate',
+                            array(
+                                'linkAttributes' => array(
+                                    'class' => 'btn btn-default btn--raise-on-hover',
+                                    'data-toggle' => 'modal',
+                                    'data-keyboard' => 'true',
+                                    'data-target' => '#exportPagetemplate'
+                                ),
+                            )
+                        );
+                    }
                     if ($canRecopy) {
                         $menu->addChild(
                             'action.recopyfromlanguage',
@@ -350,13 +357,13 @@ class ActionsMenuBuilder
                 'action.addsubpage',
                 array(
                     'linkAttributes' => array(
-                        'type'          => 'button',
-                        'class'         => 'btn btn-default btn--raise-on-hover',
-                        'data-toggle'   => 'modal',
+                        'type' => 'button',
+                        'class' => 'btn btn-default btn--raise-on-hover',
+                        'data-toggle' => 'modal',
                         'data-keyboard' => 'true',
-                        'data-target'   => '#add-subpage-modal'
+                        'data-target' => '#add-subpage-modal'
                     ),
-                    'extras'         => array('renderType' => 'button')
+                    'extras' => array('renderType' => 'button')
                 )
             );
         }
@@ -366,13 +373,13 @@ class ActionsMenuBuilder
                 'action.duplicate',
                 array(
                     'linkAttributes' => array(
-                        'type'          => 'button',
-                        'class'         => 'btn btn-default btn--raise-on-hover',
-                        'data-toggle'   => 'modal',
+                        'type' => 'button',
+                        'class' => 'btn btn-default btn--raise-on-hover',
+                        'data-toggle' => 'modal',
                         'data-keyboard' => 'true',
-                        'data-target'   => '#duplicate-page-modal'
+                        'data-target' => '#duplicate-page-modal'
                     ),
-                    'extras'         => array('renderType' => 'button')
+                    'extras' => array('renderType' => 'button')
                 )
             );
         }
@@ -387,14 +394,14 @@ class ActionsMenuBuilder
                 'action.delete',
                 array(
                     'linkAttributes' => array(
-                        'type'          => 'button',
-                        'class'         => 'btn btn-default btn--raise-on-hover',
-                        'onClick'       => 'oldEdited = isEdited; isEdited=false',
-                        'data-toggle'   => 'modal',
+                        'type' => 'button',
+                        'class' => 'btn btn-default btn--raise-on-hover',
+                        'onClick' => 'oldEdited = isEdited; isEdited=false',
+                        'data-toggle' => 'modal',
                         'data-keyboard' => 'true',
-                        'data-target'   => '#delete-page-modal'
+                        'data-target' => '#delete-page-modal'
                     ),
-                    'extras'         => array('renderType' => 'button')
+                    'extras' => array('renderType' => 'button')
                 )
             );
         }
@@ -440,13 +447,13 @@ class ActionsMenuBuilder
             'action.addhomepage',
             array(
                 'linkAttributes' => array(
-                    'type'          => 'button',
-                    'class'         => 'btn btn-default btn--raise-on-hover',
-                    'data-toggle'   => 'modal',
+                    'type' => 'button',
+                    'class' => 'btn btn-default btn--raise-on-hover',
+                    'data-toggle' => 'modal',
                     'data-keyboard' => 'true',
-                    'data-target'   => '#add-homepage-modal'
+                    'data-target' => '#add-homepage-modal'
                 ),
-                'extras'         => array('renderType' => 'button')
+                'extras' => array('renderType' => 'button')
             )
         );
 
